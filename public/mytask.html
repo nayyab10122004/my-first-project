@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Task Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Nayyab app</h2>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li class="active">My Tasks</li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="calendar.html">Calendar</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <h1>Overview of Tasks</h1>
+
+      <div class="table">
+
+        <div class="row header">
+          <div>Task</div>
+          <div>Timeline</div>
+          <div>Status</div>
+        </div>
+
+        <div class="row">
+          <div>Blog Post</div>
+          <div>Jun 9 - Jun 12</div>
+          <div><span class="done">Done</span></div>
+        </div>
+
+        <div class="row">
+          <div>Product Presentation</div>
+          <div>Jun 10 - Jun 13</div>
+          <div><span class="done">Done</span></div>
+        </div>
+
+        <div class="row">
+          <div>Illustrations</div>
+          <div>Jun 11 - Jun 15</div>
+          <div><span class="progress">In Progress</span></div>
+        </div>
+
+        <div class="row">
+          <div>Tutorial Video</div>
+          <div>Jun 12 - Jun 15</div>
+          <div><span class="progress">In Progress</span></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <script>
+    function goHome() {
+      window.location.href = "home.html";
+    }
+
+    function goProfile() {
+      window.location.href = "profile.html";
+    }
+
+    function godashboard() {
+      window.location.href = "dashboard.html";
+    }
+  </script>
+</body>
+
+</html>

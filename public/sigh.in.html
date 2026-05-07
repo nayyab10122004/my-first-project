@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-box {
+      background: #020617;
+      padding: 40px;
+      border-radius: 12px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid #1e293b;
+    }
+
+    .login-box h2 {
+      margin-bottom: 25px;
+      color: #3b82f6;
+    }
+
+    .login-box input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      background: #0f172a;
+      color: white;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .login-box input:focus {
+      border-color: #3b82f6;
+    }
+
+    .login-box button {
+      width: 98%;
+      padding: 12px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .login-box button:hover {
+      background: #2563eb;
+    }
+
+    .login-box p {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .login-box a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .login-box a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="login-box">
+      <h2>Sign In</h2>
+
+      <input type="email" placeholder="Enter Email" id="email">
+      <input type="password" placeholder="Enter Password" id="password">
+
+      <button onclick="login()">Login</button>
+
+      <p>Don't have an account? <a href="#">Sign Up</a></p>
+    </div>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      /* AGAR BACKEND HAI: Toh neeche wala Fetch code use karein.
+         AGAR BACKEND NAHI HAI: Maine niche ek temporary logic dala hai testing ke liye.
+      */
+
+      try {
+        // Real Backend call (Commented out for now if you are testing frontend only)
+        /*
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem("student", email);
+          window.location.href = "dashboard.html";
+        } else {
+          alert("Invalid login");
+        }
+        */
+
+        // Temporary Logic for Testing (Bina Server ke):
+        // Agar aap koi bhi email aur '123' password daalein toh login ho jaye
+        if (password === "123") {
+          localStorage.setItem("student", email);
+          alert("Login Successful!");
+          window.location.href = "dashboard.html"; // Ensure dashboard.html exists in same folder
+        } else {
+          alert("Invalid Password! (Try '123' for testing)");
+        }
+
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Something went wrong. Check console for details.");
+      }
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Student Profile</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    .container {
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 200px;
+      background: #020617;
+      height: 100vh;
+      padding: 20px;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar h2 {
+      color: #3b82f6;
+    }
+
+    .sidebar ul {
+      padding: 0;
+      list-style: none;
+    }
+
+    .sidebar li {
+      margin: 10px 0;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .sidebar li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+    }
+
+    .sidebar li:hover,
+    .sidebar .active {
+      background: #1e293b;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* Profile Card */
+    .profile-card {
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 10px;
+      width: 320px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .profile-card img {
+      border-radius: 50%;
+      margin-bottom: 20px;
+      border: 3px solid #3b82f6;
+    }
+
+    .profile-card input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: none;
+      background: #0f172a;
+      color: white;
+      outline: none;
+    }
+
+    .profile-card button {
+      width: 100%;
+      padding: 12px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .profile-card button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="sidebar">
+      <h2>🎓 Student</h2>
+      <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li class="active"><a href="profile.html">Profile</a></li>
+        <li onclick="logout()"><a href="#">Logout</a></li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <h1>My Profile</h1>
+
+      <div class="profile-card">
+        <img src="https://via.placeholder.com/100" alt="Profile">
+
+        <input type="text" id="name" placeholder="Enter Name">
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="text" id="course" placeholder="Course">
+
+        <button onclick="saveProfile()">Save Profile ✅</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Load profile data when page opens
+    window.onload = function () {
+      const savedProfile = JSON.parse(localStorage.getItem("profile"));
+
+      if (savedProfile) {
+        document.getElementById("name").value = savedProfile.name || "";
+        document.getElementById("email").value = savedProfile.email || "";
+        document.getElementById("course").value = savedProfile.course || "";
+      }
+    };
+
+    // Save profile to LocalStorage
+    function saveProfile() {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const course = document.getElementById("course").value;
+
+      if (!name || !email) {
+        alert("Please fill in Name and Email!");
+        return;
+      }
+
+      const profile = { name, email, course };
+      localStorage.setItem("profile", JSON.stringify(profile));
+
+      alert("Profile Saved Successfully! ✅");
+    }
+
+    // Logout Function
+    function logout() {
+      localStorage.removeItem("student");
+      alert("Logging out...");
+      // window.location.href = "signin.html";
+    }
+  </script>
+
+</body>
+
+</html>
