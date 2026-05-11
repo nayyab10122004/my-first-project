@@ -9,16 +9,62 @@
             background: #0f172a;
             font-family: Arial, sans-serif;
             color: white;
+            margin: 0;
+        }
+
+        .container {
             display: flex;
-            justify-content: center;
-            padding-top: 50px;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: #020617;
+            height: 100vh;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar h2 {
+            color: #3b82f6;
+        }
+
+        .sidebar ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .sidebar li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .sidebar li:hover,
+        .sidebar .active {
+            background: #1e293b;
+        }
+
+        .main {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .calendar-container {
             background: #1e293b;
             padding: 20px;
             border-radius: 12px;
-            width: 380px;
+            width: 420px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
@@ -36,6 +82,10 @@
             padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .calendar-header button:hover {
+            background: #2563eb;
         }
 
         .calendar-weekdays {
@@ -73,7 +123,6 @@
             font-weight: bold;
         }
 
-        /* Task Indicator Dot */
         .has-task::after {
             content: '';
             position: absolute;
@@ -89,111 +138,226 @@
         .empty-day {
             cursor: default !important;
         }
+
+        .task-panel {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            width: 420px;
+            margin-top: 20px;
+        }
+
+        .task-panel h3 {
+            color: #3b82f6;
+            margin-bottom: 12px;
+        }
+
+        .task-panel input {
+            width: 75%;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            background: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        .task-panel button {
+            padding: 10px 14px;
+            background: #3b82f6;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .task-panel button:hover {
+            background: #2563eb;
+        }
+
+        .task-item {
+            background: #0f172a;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .task-item button {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 0;
+        }
+
+        .task-item button:hover {
+            background: #dc2626;
+        }
+
+        .empty-msg {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
 <body>
-
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <button onclick="prevMonth()">❮</button>
-            <h2 id="monthDisplay">Month Year</h2>
-            <button onclick="nextMonth()">❯</button>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Task Managment App</h2>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="mytask.html">My Tasks</a></li>
+                <li class="active"><a href="Calender.html">Calendar</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li onclick="logout()"><a href="#" style="color:#ef4444;">Logout</a></li>
+            </ul>
         </div>
-        <div class="calendar-weekdays">
-            <div>Sun</div>
-            <div>Mon</div>
-            <div>Tue</div>
-            <div>Wed</div>
-            <div>Thu</div>
-            <div>Fri</div>
-            <div>Sat</div>
+        <div class="main">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button onclick="prevMonth()">❮</button>
+                    <h2 id="monthDisplay">Month Year</h2>
+                    <button onclick="nextMonth()">❯</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+                <div id="calendarDays" class="calendar-days"></div>
+            </div>
+            <div class="task-panel">
+                <h3 id="selected-date-title">Select a Date</h3>
+                <div id="task-input-area" style="display:none;">
+                    <input type="text" id="taskInput" placeholder="Write task...">
+                    <button onclick="addCalendarTask()">Add</button>
+                </div>
+                <div id="task-items"></div>
+            </div>
         </div>
-        <div id="calendarDays" class="calendar-days"></div>
     </div>
 
     <script>
+        const email = localStorage.getItem("loggedInEmail");
+
+        if (!email) {
+            alert("Please login first!");
+            window.location.href = "index.html";
+        }
+
         let date = new Date();
+        let selectedDateStr = null;
+        let calendarTasks = {};
+
+        async function loadAllCalendarTasks() {
+            try {
+                const res = await fetch(`/calendarTasks/${email}`);
+                const tasks = await res.json();
+                calendarTasks = {};
+                tasks.forEach(t => {
+                    if (!calendarTasks[t.date]) calendarTasks[t.date] = [];
+                    calendarTasks[t.date].push(t);
+                });
+                renderCalendar();
+            } catch (err) {
+                renderCalendar();
+            }
+        }
 
         function renderCalendar() {
             date.setDate(1);
             const monthDays = document.getElementById("calendarDays");
             const monthDisplay = document.getElementById("monthDisplay");
-
             const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
             const firstDayIndex = date.getDay();
-
-            const months = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
             monthDisplay.innerText = `${months[date.getMonth()]} ${date.getFullYear()}`;
 
             let days = "";
+            for (let x = firstDayIndex; x > 0; x--) days += `<div class="empty-day"></div>`;
 
-            // Previous month spaces
-            for (let x = firstDayIndex; x > 0; x--) {
-                days += `<div class="empty-day"></div>`;
-            }
-
-            // Tasks load karein localStorage se
-            const savedTasks = JSON.parse(localStorage.getItem("calendarTasks")) || {};
-
-            // Current month days
             for (let i = 1; i <= lastDay; i++) {
-                const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${i}`;
+                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 let className = "";
-
-                // Check if it's today
-                if (i === new Date().getDate() && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear()) {
-                    className += "today ";
-                }
-
-                // Check if this date has a task
-                if (savedTasks[dateStr]) {
-                    className += "has-task ";
-                }
-
-                days += `<div class="${className}" onclick="handleDateClick(${i})">${i}</div>`;
+                const today = new Date();
+                if (i === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) className += "today ";
+                if (calendarTasks[dateStr] && calendarTasks[dateStr].length > 0) className += "has-task ";
+                days += `<div class="${className}" onclick="selectDate('${dateStr}')">${i}</div>`;
             }
-
             monthDays.innerHTML = days;
         }
 
-        // Function to handle clicking on a date
-        function handleDateClick(day) {
-            const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${day}`;
-            const savedTasks = JSON.parse(localStorage.getItem("calendarTasks")) || {};
+        function selectDate(dateStr) {
+            selectedDateStr = dateStr;
+            document.getElementById("selected-date-title").textContent = `Tasks: ${dateStr}`;
+            document.getElementById("task-input-area").style.display = "block";
+            renderTaskItems();
+        }
 
-            let existingTask = savedTasks[dateStr] || "No task";
-            let newTask = prompt(`Tasks for ${dateStr}:\nCurrent: ${existingTask}\n\nEnter new task (or leave empty to delete):`);
+        function renderTaskItems() {
+            const container = document.getElementById("task-items");
+            const tasks = calendarTasks[selectedDateStr] || [];
+            if (tasks.length === 0) { container.innerHTML = `<p class="empty-msg">No tasks for this date.</p>`; return; }
+            container.innerHTML = tasks.map(t => `
+        <div class="task-item">
+          <span>${t.task}</span>
+          <button onclick="deleteCalendarTask('${t._id}')">Delete</button>
+        </div>
+      `).join('');
+        }
 
-            if (newTask === null) return; // Cancel press kiya
-
-            if (newTask.trim() === "") {
-                delete savedTasks[dateStr];
-            } else {
-                savedTasks[dateStr] = newTask;
+        async function addCalendarTask() {
+            const task = document.getElementById("taskInput").value.trim();
+            if (!task || !selectedDateStr) return;
+            try {
+                await fetch("/addCalendarTask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, date: selectedDateStr, task })
+                });
+                document.getElementById("taskInput").value = "";
+                await loadAllCalendarTasks();
+                renderTaskItems();
+            } catch (err) {
+                alert("Task not added!");
             }
-
-            localStorage.setItem("calendarTasks", JSON.stringify(savedTasks));
-            renderCalendar();
         }
 
-        function prevMonth() {
-            date.setMonth(date.getMonth() - 1);
-            renderCalendar();
+        async function deleteCalendarTask(id) {
+            try {
+                await fetch(`/deleteCalendarTask/${id}`, { method: "DELETE" });
+                await loadAllCalendarTasks();
+                renderTaskItems();
+            } catch (err) {
+                alert("Task not deleted.");
+            }
         }
 
-        function nextMonth() {
-            date.setMonth(date.getMonth() + 1);
-            renderCalendar();
+        function prevMonth() { date.setMonth(date.getMonth() - 1); renderCalendar(); }
+        function nextMonth() { date.setMonth(date.getMonth() + 1); renderCalendar(); }
+
+        function logout() {
+            localStorage.removeItem("loggedInEmail");
+            window.location.href = "index.html";
         }
 
-        renderCalendar();
+        loadAllCalendarTasks();
     </script>
-
 </body>
 
 </html>

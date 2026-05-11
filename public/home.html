@@ -17,7 +17,6 @@
       display: flex;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 220px;
       height: 100vh;
@@ -54,13 +53,11 @@
       background: #1e293b;
     }
 
-    /* Main Content */
     .main {
       flex: 1;
       padding: 20px;
     }
 
-    /* Cards */
     .cards {
       display: flex;
       gap: 20px;
@@ -86,7 +83,6 @@
       margin-bottom: 0;
     }
 
-    /* Table/List Area */
     .table {
       margin-top: 20px;
     }
@@ -107,7 +103,6 @@
       color: #94a3b8;
     }
 
-    /* Status Tags */
     .done {
       background: #16a34a;
       padding: 5px 10px;
@@ -192,15 +187,13 @@
     window.onload = function () {
       const student = localStorage.getItem("student");
 
-      // Check if user is logged in
       if (!student) {
-        // Agar signin page nahi hai toh ye alert dikhayega
         alert("Please login first!");
-        // window.location.href = "signin.html"; 
-      } else {
-        document.getElementById("welcome").innerText = "Welcome back, " + student + "!";
+        window.location.href = "login.html";
+        return;
       }
 
+      document.getElementById("welcome").innerText = "Welcome back, " + student + "!";
       loadTasks();
     };
 
@@ -210,13 +203,10 @@
 
       let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-      // Update Stats
       totalCount.innerText = tasks.length;
 
-      // Clear List
       taskList.innerHTML = "";
 
-      // Render Tasks
       tasks.forEach((t, index) => {
         taskList.innerHTML += `
           <div class="row">
@@ -244,7 +234,7 @@
     function logout() {
       localStorage.removeItem("student");
       alert("Logged out successfully!");
-      // window.location.href = "signin.html";
+      window.location.href = "login.html";
     }
   </script>
 

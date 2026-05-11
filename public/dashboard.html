@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Student Dashboard</title>
-
   <style>
     body {
       margin: 0;
@@ -15,24 +14,6 @@
 
     .container {
       display: flex;
-    }
-
-    .nav {
-      background: #02071b;
-      padding: 15px;
-      display: flex;
-      gap: 20px;
-    }
-
-    .nav a {
-      color: white;
-      text-decoration: none;
-      font-size: 17px;
-      cursor: pointer;
-    }
-
-    .nav a:hover {
-      color: #94a3b8;
     }
 
     .sidebar {
@@ -63,6 +44,7 @@
     .sidebar li a {
       color: white;
       text-decoration: none;
+      display: block;
     }
 
     .sidebar li:hover,
@@ -76,25 +58,44 @@
     }
 
     .add-task {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
       margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
-    .add-task input {
+    .add-task input[type="text"] {
       padding: 10px;
-      width: 250px;
+      width: 220px;
       border-radius: 6px;
       border: none;
       outline: none;
+      background: #0f172a;
+      color: white;
+    }
+
+    .add-task input[type="date"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      background: #0f172a;
+      color: white;
+      cursor: pointer;
     }
 
     .add-task button {
       padding: 10px 20px;
-      margin-left: 10px;
       background: #3b82f6;
       border: none;
       color: white;
       border-radius: 6px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     .add-task button:hover {
@@ -109,112 +110,150 @@
     #taskList li {
       background: #1e293b;
       margin: 10px 0;
-      padding: 12px;
+      padding: 12px 16px;
       border-radius: 6px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    #taskList button {
+    .task-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .task-name {
+      font-size: 15px;
+    }
+
+    .task-date {
+      font-size: 12px;
+      color: #3b82f6;
+    }
+
+    .btn-delete {
       background: #ef4444;
       border: none;
       color: white;
-      padding: 5px 10px;
+      padding: 5px 12px;
       border-radius: 5px;
       cursor: pointer;
+      font-size: 13px;
     }
 
-    #taskList button:hover {
+    .btn-delete:hover {
       background: #dc2626;
+    }
+
+    .empty-msg {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .error-msg {
+      color: #fca5a5;
+      font-size: 13px;
+      width: 100%;
     }
   </style>
 </head>
 
 <body>
-
   <div class="container">
-
     <div class="sidebar">
-      <h2>🎓 Student</h2>
+      <h2>Task Managment App</h2>
       <ul>
-        <li class="active"><a href="#">Dashboard</a></li>
+        <li class="active"><a href="dashboard.html">Dashboard</a></li>
         <li><a href="mytask.html">My Tasks</a></li>
-        <li><a href="sigh.in.html">Sign In</a></li>
-        <li><a href="Calender.html">Calender</a></li>
+        <li><a href="Calender.html">Calendar</a></li>
         <li><a href="profile.html">Profile</a></li>
-        <li onclick="logout()"><a href="#">Logout</a></li>
+        <li onclick="logout()"><a href="#" style="color:#ef4444;">Logout</a></li>
       </ul>
     </div>
-
     <div class="main">
       <h1 id="welcome">Loading...</h1>
-
       <div class="add-task">
-        <input type="text" id="taskInput" placeholder="Enter task...">
+        <input type="text" id="taskInput" placeholder="Write task...">
+        <input type="date" id="taskDate">
         <button onclick="addTask()">Add Task</button>
+        <div class="error-msg" id="error-msg" style="display:none;"></div>
       </div>
-
       <ul id="taskList"></ul>
     </div>
-
   </div>
 
   <script>
-    window.onload = async function () {
-      const email = localStorage.getItem("student");
+    const email = localStorage.getItem("loggedInEmail");
 
+    window.onload = async function () {
       if (!email) {
-        alert("No user found, please login.");
-        document.getElementById("welcome").innerText = "Welcome, Guest!";
+        alert("Please login first!");
+        window.location.href = "index.html";
         return;
       }
 
-      document.getElementById("welcome").innerText = "Welcome, " + email;
+      document.getElementById("welcome").innerText = "Welcome, " + email + " 👋";
+      document.getElementById("taskDate").value = new Date().toISOString().split('T')[0];
       loadTasks();
     };
 
     async function addTask() {
       const taskInput = document.getElementById("taskInput");
-      const task = taskInput.value;
-      const email = localStorage.getItem("student");
+      const taskDate = document.getElementById("taskDate");
+      const errorMsg = document.getElementById("error-msg");
+      const task = taskInput.value.trim();
+      const date = taskDate.value;
 
-      if (!task) return alert("Kuch toh likho!");
+      errorMsg.style.display = "none";
+
+      if (!task) { errorMsg.textContent = "Write a task!"; errorMsg.style.display = "block"; return; }
+      if (!date) { errorMsg.textContent = "Select a date!"; errorMsg.style.display = "block"; return; }
 
       try {
         await fetch("/addTask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, task })
+          body: JSON.stringify({ email, task, date })
+        });
+
+        await fetch("/addCalendarTask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, date, task })
         });
 
         taskInput.value = "";
         loadTasks();
       } catch (err) {
-        console.error("Server error:", err);
-        alert("Task add nahi ho saka. Kya server ON hai?");
+        errorMsg.textContent = "Not connected to server!";
+        errorMsg.style.display = "block";
       }
     }
 
     async function loadTasks() {
-      const email = localStorage.getItem("student");
       const list = document.getElementById("taskList");
-
       try {
         const res = await fetch(`/tasks/${email}`);
         const tasks = await res.json();
 
-        list.innerHTML = "";
-        tasks.forEach(t => {
-          list.innerHTML += `
+        if (tasks.length === 0) {
+          list.innerHTML = "<p class='empty-msg'>No tasks. Add from above!</p>";
+          return;
+        }
+
+        list.innerHTML = tasks.map(t => `
           <li>
-            ${t.task}
-            <button onclick="deleteTask('${t._id}')">Delete</button>
+            <div class="task-info">
+              <span class="task-name">${t.task}</span>
+              ${t.date ? `<span class="task-date">${t.date}</span>` : ""}
+            </div>
+            <button class="btn-delete" onclick="deleteTask('${t._id}')">Delete</button>
           </li>
-        `;
-        });
+        `).join('');
       } catch (err) {
-        list.innerHTML = "<p style='color: #94a3b8;'>Server se data nahi aa raha...</p>";
+        list.innerHTML = "<p class='empty-msg'>Cannot connect to server.</p>";
       }
     }
 
@@ -223,16 +262,15 @@
         await fetch(`/deleteTask/${id}`, { method: "DELETE" });
         loadTasks();
       } catch (err) {
-        alert("Delete nahi ho saka.");
+        alert("Task not deleted.");
       }
     }
 
     function logout() {
-      localStorage.removeItem("student");
-      alert("Logging out...");
+      localStorage.removeItem("loggedInEmail");
+      window.location.href = "index.html";
     }
   </script>
-
 </body>
 
 </html>

@@ -9,7 +9,6 @@ body {
   display: flex;
 }
 
-/* Sidebar */
 .sidebar {
   width: 220px;
   height: 100vh;
@@ -38,7 +37,6 @@ body {
   background: #1e293b;
 }
 
-/* Main */
 .main {
   flex: 1;
   padding: 20px;
@@ -62,7 +60,6 @@ body {
   font-weight: bold;
 }
 
-/* Status */
 .done {
   background: green;
   padding: 5px 10px;

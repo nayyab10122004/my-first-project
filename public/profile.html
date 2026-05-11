@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Student Profile</title>
-
   <style>
     body {
       margin: 0;
@@ -17,7 +16,6 @@
       display: flex;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 200px;
       background: #020617;
@@ -54,13 +52,11 @@
       background: #1e293b;
     }
 
-    /* Main Content */
     .main {
       flex: 1;
       padding: 20px;
     }
 
-    /* Profile Card */
     .profile-card {
       background: #1e293b;
       padding: 25px;
@@ -70,9 +66,17 @@
       margin-top: 20px;
     }
 
-    .profile-card img {
+    .avatar {
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      margin-bottom: 20px;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      margin: 0 auto 20px auto;
       border: 3px solid #3b82f6;
     }
 
@@ -87,6 +91,15 @@
       outline: none;
     }
 
+    .profile-card input:focus {
+      border: 1px solid #3b82f6;
+    }
+
+    .profile-card input:disabled {
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
     .profile-card button {
       width: 100%;
       padding: 12px;
@@ -97,80 +110,135 @@
       cursor: pointer;
       font-weight: bold;
       margin-top: 10px;
+      transition: 0.3s;
     }
 
     .profile-card button:hover {
       background: #2563eb;
     }
+
+    .profile-card button:disabled {
+      background: #1e3a5f;
+      cursor: not-allowed;
+    }
+
+    .error-msg {
+      background: #7f1d1d;
+      color: #fca5a5;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .success-msg {
+      background: #14532d;
+      color: #4ade80;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 
 <body>
-
   <div class="container">
-
     <div class="sidebar">
-      <h2>🎓 Student</h2>
+      <h2>Task Managment App</h2>
       <ul>
         <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="mytask.html">My Tasks</a></li>
+        <li><a href="Calender.html">Calendar</a></li>
         <li class="active"><a href="profile.html">Profile</a></li>
-        <li onclick="logout()"><a href="#">Logout</a></li>
+        <li onclick="logout()"><a href="#" style="color:#ef4444;">Logout</a></li>
       </ul>
     </div>
-
     <div class="main">
       <h1>My Profile</h1>
-
       <div class="profile-card">
-        <img src="https://via.placeholder.com/100" alt="Profile">
-
-        <input type="text" id="name" placeholder="Enter Name">
-        <input type="email" id="email" placeholder="Enter Email">
-        <input type="text" id="course" placeholder="Course">
-
-        <button onclick="saveProfile()">Save Profile ✅</button>
+        <div class="avatar" id="avatar">?</div>
+        <input type="email" id="emailDisplay" placeholder="Email" disabled>
+        <input type="text" id="name" placeholder="Enter Full Name">
+        <input type="text" id="course" placeholder="Enter Course">
+        <div class="error-msg" id="error-msg"></div>
+        <div class="success-msg" id="success-msg"></div>
+        <button onclick="saveProfile()" id="save-btn">Save Profile</button>
       </div>
     </div>
-
   </div>
 
   <script>
-    // Load profile data when page opens
-    window.onload = function () {
-      const savedProfile = JSON.parse(localStorage.getItem("profile"));
+    const email = localStorage.getItem("loggedInEmail");
 
-      if (savedProfile) {
-        document.getElementById("name").value = savedProfile.name || "";
-        document.getElementById("email").value = savedProfile.email || "";
-        document.getElementById("course").value = savedProfile.course || "";
-      }
-    };
-
-    // Save profile to LocalStorage
-    function saveProfile() {
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const course = document.getElementById("course").value;
-
-      if (!name || !email) {
-        alert("Please fill in Name and Email!");
+    window.onload = async function () {
+      if (!email) {
+        alert("Please login first!");
+        window.location.href = "index.html";
         return;
       }
 
-      const profile = { name, email, course };
-      localStorage.setItem("profile", JSON.stringify(profile));
+      document.getElementById("emailDisplay").value = email;
 
-      alert("Profile Saved Successfully! ✅");
+      try {
+        const res = await fetch(`/profile/${email}`);
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById("name").value = data.name || "";
+          document.getElementById("course").value = data.course || "";
+          if (data.name) document.getElementById("avatar").textContent = data.name.charAt(0).toUpperCase();
+        }
+      } catch (err) {
+        console.error("Profile not loading:", err);
+      }
+    };
+
+    async function saveProfile() {
+      const name = document.getElementById("name").value.trim();
+      const course = document.getElementById("course").value.trim();
+      const btn = document.getElementById("save-btn");
+      const errorMsg = document.getElementById("error-msg");
+      const successMsg = document.getElementById("success-msg");
+
+      errorMsg.style.display = "none";
+      successMsg.style.display = "none";
+
+      if (!name) { errorMsg.textContent = "Name is required!"; errorMsg.style.display = "block"; return; }
+
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        const res = await fetch("/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name, course })
+        });
+
+        if (res.ok) {
+          successMsg.textContent = "Profile saved successfully!";
+          successMsg.style.display = "block";
+          document.getElementById("avatar").textContent = name.charAt(0).toUpperCase();
+        } else {
+          errorMsg.textContent = "Profile not saved!";
+          errorMsg.style.display = "block";
+        }
+      } catch (err) {
+        errorMsg.textContent = "Server is not running!";
+        errorMsg.style.display = "block";
+      }
+
+      btn.disabled = false;
+      btn.textContent = "Save Profile";
     }
 
-    // Logout Function
     function logout() {
-      localStorage.removeItem("student");
-      alert("Logging out...");
-      // window.location.href = "signin.html";
+      localStorage.removeItem("loggedInEmail");
+      window.location.href = "index.html";
     }
   </script>
-
 </body>
 
 </html>

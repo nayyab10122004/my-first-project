@@ -5,76 +5,217 @@
   <meta charset="UTF-8">
   <title>Task Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .done {
+      background: #1a4731;
+      color: #4ade80;
+    }
+
+    .progress {
+      background: #4a2c00;
+      color: #fbbf24;
+    }
+
+    .btn-delete {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    .btn-delete:hover {
+      background: #991b1b;
+    }
+
+    .btn-toggle {
+      background: #1e3a5f;
+      color: #93c5fd;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    .btn-toggle:hover {
+      background: #1e40af;
+    }
+
+    .empty-msg {
+      text-align: center;
+      padding: 2rem;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      background: #1a2332;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      min-width: 100px;
+    }
+
+    .stat-box .label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .stat-box .value {
+      font-size: 22px;
+      font-weight: 500;
+    }
+
+    .stat-box.total .value {
+      color: #a78bfa;
+    }
+
+    .stat-box.done-stat .value {
+      color: #4ade80;
+    }
+
+    .stat-box.prog-stat .value {
+      color: #fbbf24;
+    }
+  </style>
 </head>
 
 <body>
-
   <div class="container">
-
-    <!-- Sidebar -->
     <div class="sidebar">
-      <h2>Nayyab app</h2>
+      <h2>Task Managment App</h2>
       <ul>
-        <li><a href="home.html">Home</a></li>
-        <li class="active">My Tasks</li>
         <li><a href="dashboard.html">Dashboard</a></li>
+        <li class="active">My Tasks</li>
+        <li><a href="Calender.html">Calendar</a></li>
         <li><a href="profile.html">Profile</a></li>
-        <li><a href="calendar.html">Calendar</a></li>
+        <li onclick="logout()" style="color:#ef4444; font-weight:bold; margin-top:20px; cursor:pointer; padding:10px;">
+          Logout</li>
       </ul>
     </div>
-
-    <!-- Main Content -->
     <div class="main">
       <h1>Overview of Tasks</h1>
-
+      <div class="stats-row">
+        <div class="stat-box total">
+          <div class="label">Total</div>
+          <div class="value" id="total-count">0</div>
+        </div>
+        <div class="stat-box done-stat">
+          <div class="label">Done</div>
+          <div class="value" id="done-count">0</div>
+        </div>
+        <div class="stat-box prog-stat">
+          <div class="label">In Progress</div>
+          <div class="value" id="progress-count">0</div>
+        </div>
+      </div>
       <div class="table">
-
         <div class="row header">
           <div>Task</div>
-          <div>Timeline</div>
           <div>Status</div>
+          <div>Actions</div>
         </div>
-
-        <div class="row">
-          <div>Blog Post</div>
-          <div>Jun 9 - Jun 12</div>
-          <div><span class="done">Done</span></div>
+        <div id="task-list">
+          <div class="empty-msg">Loading tasks...</div>
         </div>
-
-        <div class="row">
-          <div>Product Presentation</div>
-          <div>Jun 10 - Jun 13</div>
-          <div><span class="done">Done</span></div>
-        </div>
-
-        <div class="row">
-          <div>Illustrations</div>
-          <div>Jun 11 - Jun 15</div>
-          <div><span class="progress">In Progress</span></div>
-        </div>
-
-        <div class="row">
-          <div>Tutorial Video</div>
-          <div>Jun 12 - Jun 15</div>
-          <div><span class="progress">In Progress</span></div>
-        </div>
-
       </div>
     </div>
-
   </div>
+
   <script>
-    function goHome() {
-      window.location.href = "home.html";
+    const email = localStorage.getItem("loggedInEmail");
+    const taskList = document.getElementById("task-list");
+
+    if (!email) {
+      alert("Please login first!");
+      window.location.href = "index.html";
     }
 
-    function goProfile() {
-      window.location.href = "profile.html";
+    function updateStats(tasks) {
+      document.getElementById("total-count").textContent = tasks.length;
+      document.getElementById("done-count").textContent = tasks.filter(t => t.status === "done").length;
+      document.getElementById("progress-count").textContent = tasks.filter(t => t.status !== "done").length;
     }
 
-    function godashboard() {
-      window.location.href = "dashboard.html";
+    function renderTasks(tasks) {
+      if (!tasks.length) {
+        taskList.innerHTML = '<div class="empty-msg">No tasks. Add some!</div>';
+        updateStats([]);
+        return;
+      }
+      taskList.innerHTML = tasks.map(t => `
+        <div class="row" id="row-${t._id}">
+          <div>${t.task}</div>
+          <div><span class="badge ${t.status === 'done' ? 'done' : 'progress'}">${t.status === 'done' ? 'Done' : 'In Progress'}</span></div>
+          <div>
+            <button class="btn-toggle" onclick="toggleStatus('${t._id}', '${t.status}')">${t.status === 'done' ? 'Undo' : 'Mark Done'}</button>
+            <button class="btn-delete" onclick="deleteTask('${t._id}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+      updateStats(tasks);
     }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(`/tasks/${email}`);
+        const tasks = await res.json();
+        renderTasks(tasks);
+      } catch (err) {
+        taskList.innerHTML = '<div class="empty-msg">Cannot connect to server.</div>';
+      }
+    }
+
+    async function deleteTask(id) {
+      if (!confirm("Delete this task?")) return;
+      try {
+        await fetch(`/deleteTask/${id}`, { method: 'DELETE' });
+        loadTasks();
+      } catch (err) {
+        alert("Task not deleted!");
+      }
+    }
+
+    async function toggleStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'done' ? 'pending' : 'done';
+      try {
+        await fetch(`/updateTask/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        loadTasks();
+      } catch (err) {
+        alert("Status not updated.");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInEmail");
+      window.location.href = "index.html";
+    }
+
+    loadTasks();
   </script>
 </body>
 

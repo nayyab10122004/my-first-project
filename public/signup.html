@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .signup-box {
+            background: #020617;
+            padding: 40px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #1e293b;
+        }
+
+        .signup-box h2 {
+            margin-bottom: 25px;
+            color: #3b82f6;
+        }
+
+        .signup-box input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            background: #0f172a;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .signup-box input:focus {
+            border-color: #3b82f6;
+        }
+
+        .signup-box button {
+            width: 98%;
+            padding: 12px;
+            background: #3b82f6;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .signup-box button:hover {
+            background: #2563eb;
+        }
+
+        .signup-box button:disabled {
+            background: #1e3a5f;
+            cursor: not-allowed;
+        }
+
+        .signup-box p {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .signup-box a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .signup-box a:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success-msg {
+            background: #14532d;
+            color: #4ade80;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="signup-box">
+            <h2>Create Account</h2>
+            <input type="text" placeholder="Enter Full Name" id="name">
+            <input type="email" placeholder="Enter Email" id="email">
+            <input type="password" placeholder="Enter Password" id="password">
+            <input type="password" placeholder="Confirm Password" id="confirm-password">
+            <div class="error-msg" id="error-msg"></div>
+            <div class="success-msg" id="success-msg"></div>
+            <button onclick="signup()" id="signup-btn">Sign Up</button>
+            <p>Already have an account? <a href="index.html">Sign In</a></p>
+        </div>
+    </div>
+
+    <script>
+        async function signup() {
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirm-password").value.trim();
+            const btn = document.getElementById("signup-btn");
+            const errorMsg = document.getElementById("error-msg");
+            const successMsg = document.getElementById("success-msg");
+
+            errorMsg.style.display = "none";
+            successMsg.style.display = "none";
+
+            if (!name || !email || !password || !confirmPassword) { errorMsg.textContent = "Fill all the fields!"; errorMsg.style.display = "block"; return; }
+            if (password !== confirmPassword) { errorMsg.textContent = "Passwords do not match!"; errorMsg.style.display = "block"; return; }
+            if (password.length < 4) { errorMsg.textContent = "Password must be at least 4 characters!"; errorMsg.style.display = "block"; return; }
+
+            btn.disabled = true;
+            btn.textContent = "Creating account...";
+
+            try {
+                const response = await fetch("/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                if (response.ok) {
+                    successMsg.textContent = "Account created successfully!";
+                    successMsg.style.display = "block";
+                    setTimeout(() => { window.location.href = "index.html"; }, 1500);
+                } else {
+                    errorMsg.textContent = "This email is already registered!";
+                    errorMsg.style.display = "block";
+                    btn.disabled = false;
+                    btn.textContent = "Sign Up";
+                }
+            } catch (error) {
+                errorMsg.textContent = "Server is not working!";
+                errorMsg.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Sign Up";
+            }
+        }
+
+        document.addEventListener("keydown", (e) => { if (e.key === "Enter") signup(); });
+    </script>
+</body>
+
+</html>
