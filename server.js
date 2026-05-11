@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(cors());
@@ -31,6 +32,9 @@ const CalendarTask = mongoose.model('CalendarTask', new mongoose.Schema({
   task: String
 }));
 
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
